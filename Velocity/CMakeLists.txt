@@ -200,13 +200,17 @@ endif()
 # plugins (platforms/qwindows.dll etc.), which are loaded dynamically at runtime and
 # can't be discovered via link-time generator expressions; windeployqt (used in CI
 # packaging) is still the right tool for a fully self-contained distributable build.
-add_custom_command(TARGET VelocityNext POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_RUNTIME_DLLS:VelocityNext>
-        $<TARGET_FILE_DIR:VelocityNext>
-    COMMAND_EXPAND_LISTS
-    COMMENT "Copying Qt runtime DLLs to Velocity output directory"
-)
+# Windows only: the expression is empty on Linux/macOS, which would leave copy_if_different
+# with a single argument and fail the build.
+if(WIN32)
+    add_custom_command(TARGET VelocityNext POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:VelocityNext>
+            $<TARGET_FILE_DIR:VelocityNext>
+        COMMAND_EXPAND_LISTS
+        COMMENT "Copying Qt runtime DLLs to Velocity output directory"
+    )
+endif()
 
 # Post-build (Windows only): deploy Qt's plugins via windeployqt. Without this, the exe
 # links fine and its direct DLLs are present (via the copy step above), but it fails at
