@@ -142,7 +142,7 @@ jobs:
         if: matrix.os == 'macos-latest'
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.8.4'
+          version: '6.8.0'
           host: 'mac'
           target: 'desktop'
           arch: 'clang_64'
