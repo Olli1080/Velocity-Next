@@ -192,3 +192,41 @@ if(BUILD_XBOXINTERNALS_SHARED)
         COMMENT "Copying libXboxInternals.dll to Velocity output directory"
     )
 endif()
+
+# Post-build: Copy Qt's runtime DLLs (Qt6Core.dll, Qt6Widgets.dll, etc.) next to the
+# executable so it runs without needing Qt's bin/ on PATH. $<TARGET_RUNTIME_DLLS:tgt>
+# (CMake 3.21+) resolves the DLLs of every SHARED/IMPORTED SHARED target VelocityNext
+# links against, transitively - this covers direct Qt DLL dependencies but NOT Qt's
+# plugins (platforms/qwindows.dll etc.), which are loaded dynamically at runtime and
+# can't be discovered via link-time generator expressions; windeployqt (used in CI
+# packaging) is still the right tool for a fully self-contained distributable build.
+add_custom_command(TARGET VelocityNext POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_RUNTIME_DLLS:VelocityNext>
+        $<TARGET_FILE_DIR:VelocityNext>
+    COMMAND_EXPAND_LISTS
+    COMMENT "Copying Qt runtime DLLs to Velocity output directory"
+)
+
+# Post-build (Windows only): deploy Qt's plugins via windeployqt. Without this, the exe
+# links fine and its direct DLLs are present (via the copy step above), but it fails at
+# startup with "This application failed to start because no Qt platform plugin could be
+# initialized" - platforms/qwindows.dll (and friends) are loaded dynamically, not linked,
+# so no generator expression can discover them. windeployqt inspects the built exe and
+# copies exactly the plugins it actually needs.
+if(WIN32)
+    get_filename_component(_qt_bin_dir "${Qt6_DIR}/../../../bin" ABSOLUTE)
+    find_program(WINDEPLOYQT_EXECUTABLE
+        NAMES windeployqt6 windeployqt
+        HINTS "${_qt_bin_dir}"
+    )
+    if(WINDEPLOYQT_EXECUTABLE)
+        add_custom_command(TARGET VelocityNext POST_BUILD
+            COMMAND ${WINDEPLOYQT_EXECUTABLE} --no-compiler-runtime $<TARGET_FILE:VelocityNext>
+            COMMENT "Deploying Qt plugins (windeployqt)"
+        )
+    else()
+        message(WARNING "windeployqt6/windeployqt not found near Qt6_DIR (${Qt6_DIR}) - "
+            "VelocityNext.exe may fail to start with a 'Qt platform plugin' error.")
+    endif()
+endif()
