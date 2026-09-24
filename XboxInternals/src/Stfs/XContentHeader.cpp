@@ -1,5 +1,12 @@
 #include <XboxInternals/Stfs/XContentHeader.h>
 #include <XboxInternals/IO/MemoryIO.h>
+
+#include <botan/auto_rng.h>
+#include <botan/bigint.h>
+#include <botan/hash.h>
+#include <botan/pubkey.h>
+#include <botan/rsa.h>
+
 #include <iostream>
 #include <sstream>
 

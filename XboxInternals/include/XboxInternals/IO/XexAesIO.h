@@ -5,7 +5,7 @@
 #include <XboxInternals/IO/XexBaseIO.h>
 #include <XboxInternals/Xex/XexDefinitions.h>
 
-#include <botan_all.h>
+#include <botan/block_cipher.h>
 
 #include <memory>
 

@@ -1,5 +1,7 @@
 #include <XboxInternals/AvatarAsset/Ytgr.h>
 
+#include <botan/hash.h>
+
 Ytgr::Ytgr(std::string filePath) : ioPassedIn(false)
 {
     io = new FileIO(filePath);

@@ -7,7 +7,6 @@
 #include "../Cryptography/XeKeys.h"
 #include "../Gpd/XdbfHelpers.h"
 #include "../Stfs/StfsConstants.h"
-#include <botan_all.h>
 
 class XBOXINTERNALS_EXPORT Ytgr
 {

@@ -1,5 +1,7 @@
 #include <XboxInternals/Disc/Svod.h>
 
+#include <botan/hash.h>
+
 #include <algorithm>
 #include <cstring>
 #include <utility>

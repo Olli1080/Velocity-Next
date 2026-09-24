@@ -11,8 +11,6 @@
 #include <XboxInternals/IO/FileIO.h>
 #include <XboxInternals/Stfs/IXContentHeader.h>
 
-#include <botan_all.h>
-
 #include <XboxInternals/Export.h>
 
 using std::string;

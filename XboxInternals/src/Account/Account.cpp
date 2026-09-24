@@ -1,5 +1,8 @@
 #include <XboxInternals/Account/Account.h>
 
+#include <botan/mac.h>
+#include <botan/stream_cipher.h>
+
 Account::Account(std::string path, bool decrypt, ConsoleType type) : ioPassedIn(false),
     decrypt(decrypt), path(path), type(type)
 {

@@ -3,8 +3,8 @@
 #
 # License Compliance:
 # - XboxInternals: GPL-3.0 (inherits from Velocity project)
-# - Botan (embedded): BSD-2-Clause - See ../LICENSE-Botan.txt
-#   Botan is statically linked as amalgamation build (botan_all.cpp/botan_all.h)
+# - Botan (via vcpkg): BSD-2-Clause - See ../LICENSE-Botan.txt
+#   Botan is statically linked (see vcpkg.json / CMakePresets.json for the vcpkg wiring)
 
 set(_lib_type "STATIC")
 if(BUILD_XBOXINTERNALS_SHARED)
@@ -90,12 +90,12 @@ target_compile_definitions(XboxInternals
 target_compile_features(XboxInternals PUBLIC cxx_std_20)
 
 # Link dependencies with correct visibility:
-# - Botan: PUBLIC because botan_all.h is included in StfsPackage.h (public API)
+# - Botan: PUBLIC because Botan headers are included in public headers (e.g. Xex.h, XexAesIO.h)
 # - Qt: PRIVATE because Qt types are not exposed in public headers (uses std::string, std::vector, etc.)
 # - velocity_compiler_flags: PRIVATE to avoid propagating compile options to consumers
 target_link_libraries(XboxInternals
   PUBLIC
-    BotanAmalgamation  # Required by public headers (StfsPackage.h includes botan_all.h)
+    botan::botan-static  # Required by public headers (e.g. Xex.h includes botan/block_cipher.h)
   PRIVATE
     Qt6::Core          # Used internally, not exposed in API
     Qt6::Xml           # Used internally, not exposed in API
@@ -114,14 +114,15 @@ add_library(XboxInternals::XboxInternals ALIAS XboxInternals)
 # INSTALLATION RULES FOR STANDALONE DISTRIBUTION
 # ====================================================================
 # XboxInternals can be installed as a standalone library package.
-# BotanAmalgamation is embedded and installed alongside XboxInternals.
-# Consumers need Qt6::Core and Qt6::Xml available on their system.
+# Botan is statically embedded (linked in via vcpkg) and does not need a
+# separate install rule. Consumers need Qt6::Core, Qt6::Xml, and a Botan
+# install (via vcpkg) available on their system.
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
 # Install XboxInternals library (shared or static)
-install(TARGETS XboxInternals BotanAmalgamation
+install(TARGETS XboxInternals
   EXPORT XboxInternalsTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -174,9 +175,9 @@ if(BUILD_XBOXINTERNALS_STATIC)
   add_library(XboxInternalsStatic STATIC EXCLUDE_FROM_ALL
     $<TARGET_OBJECTS:XboxInternals>
   )
-  target_link_libraries(XboxInternalsStatic 
-    PUBLIC 
-      BotanAmalgamation
+  target_link_libraries(XboxInternalsStatic
+    PUBLIC
+      botan::botan-static
     PRIVATE
       Qt6::Core 
       Qt6::Xml 

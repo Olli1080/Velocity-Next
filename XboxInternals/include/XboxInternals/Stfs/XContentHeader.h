@@ -12,8 +12,6 @@
 #include <iostream>
 #include <vector>
 
-#include <botan_all.h>
-
 #include <XboxInternals/Export.h>
 
 using std::string;

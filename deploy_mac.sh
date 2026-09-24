@@ -12,20 +12,29 @@ echo "*** Build directory: $BUILD_DIR"
 
 # Qt discovery function
 find_qt() {
-    # Stage 1: Check if macdeployqt6 is already in PATH
+    # Stage 1: Sideloaded Qt (see cmake/SideloadQt.cmake) - the default, reproducible source
+    local sideloaded_qt
+    sideloaded_qt=$(ls -d "$SCRIPT_DIR"/externals/qt/*/macos/bin 2>/dev/null | head -n1)
+    if [ -n "$sideloaded_qt" ] && [ -x "$sideloaded_qt/macdeployqt6" ]; then
+        echo "*** Found macdeployqt6 via sideloaded Qt: $sideloaded_qt/macdeployqt6"
+        export PATH="$sideloaded_qt:$PATH"
+        return 0
+    fi
+
+    # Stage 2: Check if macdeployqt6 is already in PATH
     if command -v macdeployqt6 &> /dev/null; then
         echo "*** Found macdeployqt6 in PATH"
         return 0
     fi
 
-    # Stage 2: Check environment variable (user explicit configuration)
+    # Stage 3: Check environment variable (explicit override, e.g. VELOCITY_SIDELOAD_QT=OFF builds)
     if [ -n "$QT6_PREFIX_PATH" ] && [ -x "$QT6_PREFIX_PATH/bin/macdeployqt6" ]; then
         echo "*** Found macdeployqt6 via QT6_PREFIX_PATH: $QT6_PREFIX_PATH/bin/macdeployqt6"
         export PATH="$QT6_PREFIX_PATH/bin:$PATH"
         return 0
     fi
 
-    # Stage 3: Check common Qt installation locations (fallback)
+    # Stage 4: Check common Qt installation locations (fallback)
     echo "*** macdeployqt6 not in PATH or QT6_PREFIX_PATH, searching common locations..."
     
     local qt_paths=(
@@ -52,9 +61,10 @@ find_qt() {
 if ! find_qt; then
     echo ">>> ERROR: macdeployqt6 not found"
     echo "*** Please use one of these solutions:"
-    echo "*** 1. Add Qt to your PATH: export PATH=\"\$HOME/Qt/[version]/macos/bin:\$PATH\""
-    echo "*** 2. Set QT6_PREFIX_PATH: export QT6_PREFIX_PATH=\"/path/to/your/qt\""
-    echo "*** 3. Install Qt via Homebrew: brew install qt"
+    echo "*** 1. Run cmake --preset macos-release first, so Qt is sideloaded into externals/qt/"
+    echo "*** 2. Add Qt to your PATH: export PATH=\"\$HOME/Qt/[version]/macos/bin:\$PATH\""
+    echo "*** 3. Set QT6_PREFIX_PATH: export QT6_PREFIX_PATH=\"/path/to/your/qt\""
+    echo "*** 4. Install Qt via Homebrew: brew install qt"
     exit 1
 fi
 

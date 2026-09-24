@@ -1,0 +1,6 @@
+{
+    "name": "velocity-next",
+    "dependencies": [
+        "botan"
+    ]
+}

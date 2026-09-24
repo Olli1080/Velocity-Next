@@ -26,9 +26,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ---
 
-Note: Velocity embeds Botan as an amalgamation build. The amalgamated Botan
-library (botan_all.cpp/botan_all.h) is generated during the build process
-from Botan version 3.9.0 and is statically linked into the XboxInternals
-library.
+Note: Velocity embeds Botan, built and statically linked via vcpkg (see
+vcpkg.json), into the XboxInternals library.
 
 For more information about Botan, visit: https://botan.randombit.net/

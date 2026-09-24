@@ -157,17 +157,16 @@ target_include_directories(VelocityNext
     ${Qt6Core_PRIVATE_INCLUDE_DIRS}
 )
 
-# Common linking for all platforms - ALWAYS use our BotanAmalgamation
+# Common linking for all platforms
 target_link_libraries(VelocityNext
   PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Xml
-    Qt6::Widgets  
+    Qt6::Widgets
     Qt6::Network
     Qt6::Concurrent
-    XboxInternals::XboxInternals  # Use namespaced target (modern CMake)
-    BotanAmalgamation  # Our custom amalgamation on ALL platforms
+    XboxInternals::XboxInternals  # Use namespaced target (modern CMake); pulls in Botan::Botan transitively
     velocity_compiler_flags  # Inherit common compile options
 )
 

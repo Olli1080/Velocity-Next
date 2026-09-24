@@ -1,5 +1,9 @@
 #include <XboxInternals/Cryptography/XeCrypt.h>
 
+#include <botan/bigint.h>
+#include <botan/pubkey.h>
+#include <botan/rsa.h>
+
 void XeCrypt::BnQw_SwapDwQwLeBe(BYTE *data, DWORD length)
 {
     if (length % 8 != 0)

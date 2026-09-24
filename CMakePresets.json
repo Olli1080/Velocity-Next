@@ -2,7 +2,7 @@
   "version": 6,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 20,
+    "minor": 21,
     "patch": 0
   },
   "configurePresets": [
@@ -10,10 +10,11 @@
       "name": "windows-msvc-base",
       "hidden": true,
       "generator": "Ninja",
-      "toolchainFile": "${sourceDir}/cmake/msvc-toolchain.cmake",
       "cacheVariables": {
         "CMAKE_CXX_STANDARD": "20",
-        "CMAKE_PREFIX_PATH": "C:/Qt/6.8.3/msvc2022_64"
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/externals/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/msvc-toolchain.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static-md"
       }
     },
     {
@@ -24,7 +25,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_CXX_STANDARD": "20",
-        "CMAKE_PREFIX_PATH": "C:/Qt/6.8.3/mingw_64"
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/externals/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-mingw-static"
       }
     },
     {
@@ -35,7 +37,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_CXX_STANDARD": "20",
-        "CMAKE_PREFIX_PATH": "C:/Qt/6.8.3/mingw_64"
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/externals/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-mingw-static"
       }
     },
     {
@@ -45,7 +48,8 @@
       "binaryDir": "${sourceDir}/out/build/macos-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_CXX_STANDARD": "20"
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/externals/vcpkg/scripts/buildsystems/vcpkg.cmake"
       }
     },
     {
@@ -55,27 +59,30 @@
       "binaryDir": "${sourceDir}/out/build/macos-debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_CXX_STANDARD": "20"
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/externals/vcpkg/scripts/buildsystems/vcpkg.cmake"
       }
     },
     {
       "name": "linux-release",
       "displayName": "Linux Release",
-      "generator": "Ninja", 
+      "generator": "Ninja",
       "binaryDir": "${sourceDir}/out/build/linux-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_CXX_STANDARD": "20"
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/externals/vcpkg/scripts/buildsystems/vcpkg.cmake"
       }
     },
     {
       "name": "linux-debug",
       "displayName": "Linux Debug",
-      "generator": "Ninja", 
+      "generator": "Ninja",
       "binaryDir": "${sourceDir}/out/build/linux-debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_CXX_STANDARD": "20"
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/externals/vcpkg/scripts/buildsystems/vcpkg.cmake"
       }
     },
     {

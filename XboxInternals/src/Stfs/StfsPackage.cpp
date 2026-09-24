@@ -2,7 +2,10 @@
 #include <XboxInternals/Stfs/XContentHeader.h>
 #include <XboxInternals/IO/StfsIO.h>
 
+#include <botan/hash.h>
+
 #include <stdio.h>
+#include <functional>
 #include <memory>
 #include <iostream>
 #include <iomanip>

@@ -63,9 +63,5 @@ If no copy of the GNU General Public License was received with this program (FIL
 
 Velocity-Next includes and statically links the following third-party libraries:
 
-- **Botan** (BSD-2-Clause): Cryptography library embedded as amalgamation build. See [LICENSE-Botan.txt](LICENSE-Botan.txt) for full license text.
+- **Botan** (BSD-2-Clause): Cryptography library, built and statically linked via [vcpkg](https://vcpkg.io). See [LICENSE-Botan.txt](LICENSE-Botan.txt) for full license text.
 - **Qt 6**: Cross-platform application framework (LGPL v3 / GPL v3). Qt is dynamically linked (MSVC builds) or statically linked (MinGW builds).
-
-### Build System Acknowledgments
-
-- Botan CMake integration adapted from [Tectu/botan-cmake](https://github.com/Tectu/botan-cmake)

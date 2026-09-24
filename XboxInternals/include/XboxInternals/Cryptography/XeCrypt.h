@@ -2,10 +2,9 @@
 #define XECRYPT_H
 
 #include <XboxInternals/TypeDefinitions.h>
+#include <algorithm>
 #include <iostream>
 #include <string.h>
-
-#include <botan_all.h>
 
 #include <XboxInternals/Export.h>
 

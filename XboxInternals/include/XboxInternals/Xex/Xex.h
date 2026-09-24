@@ -14,7 +14,7 @@
 #include <memory>
 #include <string>
 
-#include <botan_all.h>
+#include <botan/block_cipher.h>
 
 class XexBaseIO;
 class XexAesIO;

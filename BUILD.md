@@ -2,21 +2,23 @@
 
 ## Prerequisites
 
-- **Qt 6.7.3 or higher** (Components: Core, Xml, Widgets, Network)
-  - Tested with: Qt 6.8.0 and above
-- **CMake 3.20+**
+- **CMake 3.21+** (needed for the `$<TARGET_RUNTIME_DLLS:...>` generator expression that copies Qt's runtime DLLs)
 - **C++20 compiler**:
   - **Windows**: MinGW 13.1.0+ or MSVC 2022 (Visual Studio 17.0+)
   - **macOS**: Clang (Xcode Command Line Tools)
   - **Linux**: GCC 11+ or Clang 14+
-- **Python 3** (for Botan amalgamation build)
+- **Git**, **Python 3**, and a working internet connection (for vcpkg building Botan, and for sideloading Qt - see below; both happen automatically on first configure)
+- **Qt is not a manual prerequisite** - see "Qt Configuration" below
 
 ## Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/Pandoriaantje/Velocity-Next
+# Clone the repository (--recurse-submodules pulls in the vcpkg submodule)
+git clone --recurse-submodules https://github.com/Pandoriaantje/Velocity-Next
 cd Velocity-Next
+
+# If you already cloned without --recurse-submodules:
+# git submodule update --init --recursive
 
 # Configure (choose one preset)
 cmake --preset windows-mingw-release    # Windows MinGW Release
@@ -56,49 +58,32 @@ Visit the [Releases page](https://github.com/Pandoriaantje/Velocity-Next/release
 
 ## Botan Dependency
 
-The cryptography library is automatically handled:
+The cryptography library is managed by [vcpkg](https://vcpkg.io), pinned as a Git submodule at `externals/vcpkg`:
 
-- **Automatic Download**: Botan is automatically downloaded and built
-- **No Submodule Required**: No git submodules to initialize
-- **Custom Modules**: Uses minimal module set defined in botan_modules.cmake
-- **Amalgamation**: Built as single-file amalgamation for better performance
+- **Manifest-driven**: Declared in `vcpkg.json`; CMake resolves and builds it automatically on first configure
+- **Static linkage**: Built as a static library and embedded into XboxInternals (see the `VCPKG_TARGET_TRIPLET` set per-preset in `CMakePresets.json`)
+- **Submodule required**: Run `git submodule update --init --recursive` if you cloned without `--recurse-submodules`
+- **First configure is slow**: Botan is compiled from source the first time; subsequent configures reuse the vcpkg build cache
 
 ## Qt Configuration
 
-### Qt Version Information
+- **Components Required**: Core, Xml, Widgets, Network, Concurrent
+- **Version**: pinned to 6.8.3 (see `QT_SIDELOAD_VERSION` in `cmake/SideloadQt.cmake`)
 
-- **Minimum Required**: Qt 6.7.3
-- **Tested Versions**: Qt 6.8.0 and above
-- **Components Required**: Core, Xml, Widgets, Network
+### Sideloaded by default
 
-### Automatic Discovery
+Qt is **not** a manual prerequisite. On first configure, `cmake/SideloadQt.cmake` downloads a pinned copy of Qt straight from Qt's official archives (via [aqtinstall](https://github.com/miurahr/aqtinstall), the same tool `jurplel/install-qt-action` uses in CI) into `externals/qt/` inside the repository - nothing is installed system-wide, and nothing is written outside the project directory. This makes builds reproducible across machines without depending on whatever Qt happens to already be on the system.
 
-The build system uses a three-stage process to find Qt automatically:
+- **Requires**: Python 3 and internet access (only on the first configure per Qt version/platform; `pip install aqtinstall` runs automatically if needed)
+- **First configure is slow**: downloads roughly 1-2 GB; subsequent configures reuse `externals/qt/` and are instant
+- **MinGW note**: the MinGW *compiler* itself is still expected on PATH and must match the sideloaded Qt's MinGW kit (13.1.0+) - only the Qt libraries/headers are sideloaded, not the compiler
 
-1. **CMake Native Detection** - Uses standard CMake Qt discovery
-2. **qmake Fallback** - Finds qmake6/qmake in PATH and queries installation  
-3. **Environment Variable** - Checks QT6_PREFIX_PATH if needed
+### Using a system Qt install instead
 
-**Common locations where Qt is found automatically:**
-
-- **Windows**: Standard Qt installer paths (C:/Qt/[version]/*)
-- **macOS**: Qt installer locations (~/Qt) and Homebrew installations  
-- **Linux**: Qt installer locations (~/Qt) and system package locations
-
-The detection works with any Qt installation as long as:
-- Qt is installed in a standard location, OR
-- `qmake6` is available in your PATH
-
-If Qt is not found automatically, see "Manual Qt Configuration" below.
-
-### Manual Qt Configuration
-
-If Qt is not found automatically, specify it manually using CMAKE_PREFIX_PATH:
+To opt out of sideloading and use your own Qt install:
 
 ```bash
-# Set Qt path explicitly
-cmake -B build -DCMAKE_PREFIX_PATH="/path/to/your/qt"
-cmake --build build
+cmake --preset windows-msvc-release -DVELOCITY_SIDELOAD_QT=OFF -DCMAKE_PREFIX_PATH="/path/to/your/qt"
 ```
 
 ## Build Options
@@ -177,9 +162,14 @@ cmake --preset windows-mingw-release -DBUILD_XBOXINTERNALS_STATIC=ON
 
 ### Botan Version
 
+The Botan version is pinned by the `externals/vcpkg` submodule commit (see its `ports/botan/vcpkg.json`). To pick up a newer Botan release, update the submodule to a newer vcpkg commit:
+
 ```bash
-# Test with different Botan version (if needed)
-cmake --preset windows-mingw-release -DBOTAN_VERSION=3.10.0
+cd externals/vcpkg
+git fetch
+git checkout <newer-commit>
+cd ../..
+git add externals/vcpkg
 ```
 
 ## Platform-Specific Notes
@@ -188,14 +178,12 @@ cmake --preset windows-mingw-release -DBOTAN_VERSION=3.10.0
 
 #### MinGW
 - **Presets**: `windows-mingw-release` or `windows-mingw-debug`
-- **Compiler**: MinGW 13.1.0+ (must match Qt installation)
-- **Qt Installation**: Use Qt Online Installer and select MinGW kit
+- **Compiler**: MinGW 13.1.0+ on PATH (must match the sideloaded Qt's MinGW kit - Qt itself is sideloaded automatically, see "Qt Configuration")
 - **Output**: Executable with Windows resource data
 
 #### MSVC (Visual Studio 2022)
 - **Presets**: `windows-msvc-release` or `windows-msvc-debug`
 - **Requirements**: Visual Studio 2022 (17.0+) with C++ workload
-- **Qt Installation**: Use Qt Online Installer and select MSVC 2022 64-bit kit
 - **Setup**: Run from **Developer Command Prompt for VS 2022** or **Developer PowerShell for VS 2022**
 - **Output**: Executable with Windows resource data
 
@@ -211,7 +199,7 @@ cmake --build --preset windows-msvc-release
 - Visual Studio 2022 or Build Tools for Visual Studio 2022
 - C++ CMake tools for Windows component
 - Ninja build system (included with Visual Studio)
-- Qt compiled for MSVC 2022 (download from Qt installer)
+- Qt is sideloaded automatically on first configure (see "Qt Configuration")
 
 ### macOS
 - **Bundle**: Creates .app bundle with proper metadata
@@ -221,17 +209,17 @@ cmake --build --preset windows-msvc-release
 #### macOS Distribution
 
 **Prerequisites:**
-- Qt 6.7.3 or higher installed on your system
 - Xcode command line tools installed
-- Build the project first using the presets above
+- Build the project first using the presets above (this sideloads Qt into `externals/qt/`)
 - `app.entitlements` file exists in project root
 
-**Note**: The deployment script will automatically find Qt in:
-- Your PATH
-- QT6_PREFIX_PATH environment variable  
-- Common installation locations (~/Qt, Homebrew, etc.)
+**Note**: The deployment script (`deploy_mac.sh`) automatically finds `macdeployqt6` in this order:
+1. The sideloaded Qt at `externals/qt/*/macos/bin`
+2. Your PATH
+3. QT6_PREFIX_PATH environment variable
+4. Common installation locations (~/Qt, Homebrew, etc.)
 
-If needed, you can explicitly set your Qt path:
+If you built with `-DVELOCITY_SIDELOAD_QT=OFF` and need to point at your own Qt:
 
 ```bash
 export PATH="$HOME/Qt/[version]/macos/bin:$PATH"
@@ -256,27 +244,34 @@ chmod +x deploy_mac.sh
 
 ## Troubleshooting
 
-### Qt Not Found
+### Qt Sideload Issues
 
 ```bash
-# Verify Qt installation (must be 6.7.3 or higher)
-qmake6 --version
+# Ensure Python 3 and aqtinstall work
+python -m aqt version
 
-# Set Qt path explicitly
-cmake -B build -DCMAKE_PREFIX_PATH="/path/to/qt"
+# Force a clean re-download (delete the sideloaded copy)
+rm -rf externals/qt
+cmake --preset your-preset
+
+# Check internet connection (aqtinstall needs it to fetch Qt on first configure)
 ```
 
-### Botan Build Issues
+To bypass sideloading entirely and use your own Qt install:
 ```bash
-# Clean and rebuild
+cmake --preset your-preset -DVELOCITY_SIDELOAD_QT=OFF -DCMAKE_PREFIX_PATH="/path/to/qt"
+```
+
+### Botan / vcpkg Build Issues
+```bash
+# Ensure the vcpkg submodule is initialized
+git submodule update --init --recursive
+
+# Clean and rebuild (also clears the vcpkg install tree for this preset)
 rm -rf out/build
 cmake --preset your-preset
 
-# Ensure Python 3 is available
-python --version   # Windows
-python3 --version  # macOS/Linux
-
-# Check internet connection (Botan download requires internet)
+# Check internet connection (vcpkg needs it to fetch Botan sources on first build)
 ```
 ### Compiler Issues
 - Ensure your compiler supports C++20

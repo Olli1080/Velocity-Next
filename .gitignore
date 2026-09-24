@@ -1,8 +1,12 @@
 # Build output
 out/
 
-# Dependencies
-botan/
+# vcpkg local install/build tree (if vcpkg is invoked outside out/build/)
+vcpkg_installed/
+
+# Sideloaded Qt (see cmake/SideloadQt.cmake) - downloaded, never committed
+externals/qt/
+aqtinstall.log
 
 # Development documentation
 specs/
