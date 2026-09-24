@@ -757,6 +757,12 @@ void MainWindow::on_actionProfile_Creator_triggered()
     wiz.exec();
 }
 
+void MainWindow::on_actionXenia_Save_Exporter_triggered()
+{
+    XeniaSaveExportWizard wiz(ui->statusBar, this);
+    wiz.exec();
+}
+
 void MainWindow::on_actionGame_Adder_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open Package"),

@@ -32,6 +32,7 @@
 #include "profilecreatorwizard.h"
 #include "themecreationwizard.h"
 #include "gameadderdialog.h"
+#include "xeniasaveexportwizard.h"
 #include "titleidfinderdialog.h"
 #include "gamerpicturepackdialog.h"
 #include "preferencesdialog.h"
@@ -112,6 +113,8 @@ private slots:
     void on_actionTheme_Creator_triggered();
 
     void on_actionGame_Adder_triggered();
+
+    void on_actionXenia_Save_Exporter_triggered();
 
     void on_actionGamer_Picture_Pack_Creator_triggered();
 

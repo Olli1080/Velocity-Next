@@ -107,6 +107,7 @@
      <addaction name="actionProfile_Cleaner"/>
      <addaction name="actionProfile_Creator"/>
      <addaction name="actionProfile_Editor"/>
+     <addaction name="actionXenia_Save_Exporter"/>
     </widget>
     <widget class="QMenu" name="menuDevice_Tools">
      <property name="title">
@@ -286,6 +287,14 @@
    </property>
    <property name="shortcutContext">
     <enum>Qt::WindowShortcut</enum>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionXenia_Save_Exporter">
+   <property name="text">
+    <string>Xenia Savegame Exporter</string>
    </property>
    <property name="iconVisibleInMenu">
     <bool>true</bool>

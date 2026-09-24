@@ -71,6 +71,7 @@ set(SOURCES
   titleidfinderdialog.cpp
   transferflagsdialog.cpp
   xdbfdialog.cpp
+  xeniasaveexportwizard.cpp
   xmldialog.cpp
   zipviewer.cpp
   ytgrdialog.cpp
@@ -123,6 +124,7 @@ set(UI_FORMS
   xmldialog.ui
   textdialog.ui
   zipviewer.ui
+  xeniasaveexportwizard.ui
 )
 
 # Platform-specific executable properties

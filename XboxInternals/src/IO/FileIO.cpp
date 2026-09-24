@@ -1,12 +1,30 @@
 #include <XboxInternals/IO/FileIO.h>
 #include <vector>
+#include <filesystem>
 
 FileIO::FileIO(string path, bool truncate) :
     BaseIO(), filePath(path)
 {
-    fstr = std::make_unique<fstream>(path.c_str(),
-            fstream::in | fstream::out | fstream::binary | (truncate ? fstream::trunc :
-                    static_cast<std::ios_base::openmode>(0)));
+    const std::ios_base::openmode mode = fstream::in | fstream::out | fstream::binary |
+            (truncate ? fstream::trunc : static_cast<std::ios_base::openmode>(0));
+
+#ifdef _WIN32
+    // Callers hand us UTF-8 (QString::toStdString); the narrow fstream constructor would
+    // decode it in the ANSI code page and fail on paths containing e.g. umlauts.
+    try
+    {
+        std::u8string u8path(reinterpret_cast<const char8_t*>(path.data()), path.size());
+        fstr = std::make_unique<fstream>(std::filesystem::path(u8path), mode);
+    }
+    catch (const std::exception&)
+    {
+        // not valid UTF-8 - fall back to the previous narrow-path behavior
+        fstr = std::make_unique<fstream>(path.c_str(), mode);
+    }
+#else
+    fstr = std::make_unique<fstream>(path.c_str(), mode);
+#endif
+
     if (!fstr || !fstr->is_open())
     {
         std::string ex("FileIO: Error opening the file. ");
