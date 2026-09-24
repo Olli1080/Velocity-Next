@@ -6,6 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+env:
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.vcpkg-cache
+
 jobs:
   build:
     strategy:
@@ -32,7 +35,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-      
+
+      - name: Prepare vcpkg binary cache
+        shell: bash
+        run: |
+          mkdir -p "$VCPKG_DEFAULT_BINARY_CACHE"
+          echo "VCPKG_SUBMODULE_SHA=$(git rev-parse HEAD:externals/vcpkg)" >> "$GITHUB_ENV"
+
+      - name: Cache vcpkg binaries
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-${{ matrix.os }}-${{ matrix.compiler }}-${{ env.VCPKG_SUBMODULE_SHA }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ matrix.os }}-${{ matrix.compiler }}-${{ env.VCPKG_SUBMODULE_SHA }}-
+
       # Windows MinGW setup
       - name: Install Qt (Windows MinGW)
         if: matrix.os == 'windows-latest' && matrix.compiler == 'mingw'
@@ -156,21 +173,23 @@ jobs:
           $env:PATH = "${{ steps.mingw-setup.outputs.mingw-path }};$env:PATH"
           cmake --preset windows-mingw-release `
             -DCMAKE_C_COMPILER="${{ steps.mingw-setup.outputs.c-compiler }}" `
-            -DCMAKE_CXX_COMPILER="${{ steps.mingw-setup.outputs.cxx-compiler }}"
+            -DCMAKE_CXX_COMPILER="${{ steps.mingw-setup.outputs.cxx-compiler }}" `
+            -DVELOCITY_SIDELOAD_QT=OFF `
+            -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
         shell: pwsh
       
       - name: Configure CMake (Windows MSVC)
         if: matrix.os == 'windows-latest' && matrix.compiler == 'msvc'
-        run: cmake --preset windows-msvc-release
+        run: cmake --preset windows-msvc-release -DVELOCITY_SIDELOAD_QT=OFF -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR"
         shell: pwsh
       
       - name: Configure CMake (macOS)
         if: matrix.os == 'macos-latest'
-        run: cmake --preset macos-release
+        run: cmake --preset macos-release -DVELOCITY_SIDELOAD_QT=OFF -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR"
       
       - name: Configure CMake (Linux)
         if: matrix.os == 'ubuntu-latest'
-        run: cmake --preset linux-release
+        run: cmake --preset linux-release -DVELOCITY_SIDELOAD_QT=OFF -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR"
       
       # Build step
       - name: Build (Windows MinGW)

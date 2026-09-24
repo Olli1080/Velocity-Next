@@ -3,6 +3,9 @@ name: Build Linux
 on:
   workflow_dispatch:  # manual only
 
+env:
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.vcpkg-cache
+
 jobs:
   build-linux:
     name: Linux (Ubuntu)
@@ -13,7 +16,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-      
+
+      - name: Prepare vcpkg binary cache
+        shell: bash
+        run: |
+          mkdir -p "$VCPKG_DEFAULT_BINARY_CACHE"
+          echo "VCPKG_SUBMODULE_SHA=$(git rev-parse HEAD:externals/vcpkg)" >> "$GITHUB_ENV"
+
+      - name: Cache vcpkg binaries
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-linux-${{ env.VCPKG_SUBMODULE_SHA }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-linux-${{ env.VCPKG_SUBMODULE_SHA }}-
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -29,7 +46,7 @@ jobs:
           cache: true
       
       - name: Configure CMake
-        run: cmake --preset linux-release
+        run: cmake --preset linux-release -DVELOCITY_SIDELOAD_QT=OFF -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR"
       
       - name: Build
         run: cmake --build --preset linux-release
