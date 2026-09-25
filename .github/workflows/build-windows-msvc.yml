@@ -13,7 +13,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -24,7 +24,7 @@ jobs:
           echo "VCPKG_SUBMODULE_SHA=$(git rev-parse HEAD:externals/vcpkg)" >> "$GITHUB_ENV"
 
       - name: Cache vcpkg binaries
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
           key: vcpkg-windows-msvc-${{ env.VCPKG_SUBMODULE_SHA }}-${{ hashFiles('vcpkg.json') }}
@@ -62,7 +62,7 @@ jobs:
           windeployqt release-msvc/VelocityNext.exe
       
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Velocity-Next-Windows-MSVC
           path: release-msvc/

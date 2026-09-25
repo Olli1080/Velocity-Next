@@ -24,7 +24,7 @@ jobs:
           - os: macos-latest
             compiler: clang
             name: macOS
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             compiler: gcc
             name: Linux
     runs-on: ${{ matrix.os }}
@@ -32,7 +32,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -43,7 +43,7 @@ jobs:
           echo "VCPKG_SUBMODULE_SHA=$(git rev-parse HEAD:externals/vcpkg)" >> "$GITHUB_ENV"
 
       - name: Cache vcpkg binaries
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
           key: vcpkg-${{ matrix.os }}-${{ matrix.compiler }}-${{ env.VCPKG_SUBMODULE_SHA }}-${{ hashFiles('vcpkg.json') }}
@@ -151,7 +151,7 @@ jobs:
       
       # Linux setup
       - name: Install Qt (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-24.04'
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.8.0'
@@ -161,7 +161,7 @@ jobs:
           cache: true
       
       - name: Install dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-24.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y libxcb-cursor0 libgl1-mesa-dev
@@ -188,7 +188,7 @@ jobs:
         run: cmake --preset macos-release -DVELOCITY_SIDELOAD_QT=OFF -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR"
       
       - name: Configure CMake (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-24.04'
         run: cmake --preset linux-release -DVELOCITY_SIDELOAD_QT=OFF -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR"
       
       # Build step
@@ -209,7 +209,7 @@ jobs:
         run: cmake --build --preset macos-release
       
       - name: Build (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-24.04'
         run: cmake --build --preset linux-release
       
       # Package step
@@ -240,7 +240,7 @@ jobs:
           mv release-macos/VelocityNext.dmg release-macos/Velocity-Next.dmg
       
       - name: Package (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-24.04'
         run: |
           mkdir -p release-linux
           cp out/build/linux-release/VelocityNext/VelocityNext release-linux/
@@ -249,28 +249,28 @@ jobs:
       # Upload artifacts
       - name: Upload artifact (Windows MinGW)
         if: matrix.os == 'windows-latest' && matrix.compiler == 'mingw'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Velocity-Next-Windows-MinGW
           path: release-mingw/
       
       - name: Upload artifact (Windows MSVC)
         if: matrix.os == 'windows-latest' && matrix.compiler == 'msvc'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Velocity-Next-Windows-MSVC
           path: release-msvc/
       
       - name: Upload artifact (macOS)
         if: matrix.os == 'macos-latest'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Velocity-Next-macOS
           path: release-macos/Velocity-Next.dmg
       
       - name: Upload artifact (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-24.04'
+        uses: actions/upload-artifact@v6
         with:
           name: Velocity-Next-Linux
           path: release-linux/
