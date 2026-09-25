@@ -112,14 +112,14 @@ find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Xml Widgets Network 
 
 message(STATUS "Found Qt6 ${Qt6Core_VERSION} at: ${Qt6Core_DIR}")
 
-# Qt <= 6.8.3 (QTBUG-137687): when the AGL framework is missing from the SDK, Qt's
-# FindWrapOpenGL falls back to a literal "-framework AGL", which then fails at link time
-# ("ld: framework 'AGL' not found") on the newest macOS SDKs, where Apple removed AGL.
-# Drop only that literal fallback entry; a real, found AGL framework is left untouched.
+# Qt <= 6.8.3 (QTBUG-137687): Qt's FindWrapOpenGL always links AGL on macOS, either as a
+# literal "-framework AGL" fallback or as the path of an AGL.framework folder that the newest
+# macOS SDKs still ship without a linkable library ("ld: framework 'AGL' not found"), since
+# Apple removed AGL. Nothing here uses AGL (Qt 6 renders via Metal/NSOpenGL), so drop both forms.
 if(APPLE AND TARGET WrapOpenGL::WrapOpenGL)
     get_target_property(_wrap_opengl_libs WrapOpenGL::WrapOpenGL INTERFACE_LINK_LIBRARIES)
     if(_wrap_opengl_libs)
-        list(FILTER _wrap_opengl_libs EXCLUDE REGEX "^-framework AGL$")
+        list(FILTER _wrap_opengl_libs EXCLUDE REGEX "(^-framework AGL$|(^|/)AGL\\.framework/?$)")
         set_target_properties(WrapOpenGL::WrapOpenGL PROPERTIES INTERFACE_LINK_LIBRARIES "${_wrap_opengl_libs}")
     endif()
 endif()
